@@ -125,3 +125,16 @@ database.ref('players').on('value', (snapshot) => {
     const currentData = allLists[category].data; 
     console.log("Data loaded for:", allLists[category].title);
 }); // <-- CHECK THIS CLOSING BRACKET! If it's missing, you get "Unexpected end of input"
+
+// This tells the browser: "Wait until the HTML is finished drawing"
+document.addEventListener('DOMContentLoaded', () => {
+    const picker = document.getElementById('category-select');
+
+    picker.addEventListener('change', (e) => {
+        const selectedCategory = e.target.value;
+        console.log("New selection:", selectedCategory);
+        
+        // This is where you call your function to restart the game/logic
+        // Example: loadNewQuestion(selectedCategory);
+    });
+});
