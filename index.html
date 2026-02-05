@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Baseball Battle</title>
+    <script src="stats.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
@@ -33,6 +34,11 @@
 
     <div class="setup-ui" id="lobby">
         <h2>Online Multiplayer Setup</h2>
+        <select id="category-select">
+    <option value="hr">All-Time Home Runs</option>
+    <option value="singles">All-Time Singles</option>
+    <option value="dwar">All-Time Defensive WAR</option>
+</select>
         <p>Pick a side and start guessing!</p>
         <button onclick="joinGame(1)" style="background: #0ea5e9; color: white; margin-right: 10px;">Join as Player 1 (Blue)</button>
         <button onclick="joinGame(2)" style="background: #e11d48; color: white;">Join as Player 2 (Red)</button>
@@ -158,3 +164,4 @@ createGrid();
 </script>
 </body>
 </html>
+
