@@ -1,7 +1,7 @@
 const allLists = {
-  hits: {
-        title: "Career Hits Leaders",
-        data: [
+  "hits": {
+    "title": "All-Time Hits Leaders",
+    "data": [
             { rank: "1", name: "Pete Rose" },
             { rank: "2", name: "Ty Cobb" },
             { rank: "3", name: "Henry Aaron" },
