@@ -55,9 +55,12 @@
     <div class="setup-ui" id="lobby">
         <h2>Game Setup</h2>
         <select id="category-select" style="margin-bottom: 15px; width: 100%; padding: 8px;">
-            <option value="hr">Home Runs</option>
-            <option value="singles">Singles</option>
-            <option value="dwar">Defensive WAR</option>
+         <select id="category-select">
+    <option value="hr">Home Runs</option>
+    <option value="hits">Career Hits</option>
+    <option value="singles">Singles</option>
+    <option value="dwar">Defensive WAR</option>
+</select>
         </select>
         <button id="join-p1" onclick="joinGame(1)" style="background: #0ea5e9; color: white; padding: 10px; width: 100%; margin-bottom: 5px; border: none; border-radius: 5px;">Join P1 (Blue)</button>
         <button id="join-p2" onclick="joinGame(2)" style="background: #e11d48; color: white; padding: 10px; width: 100%; border: none; border-radius: 5px;">Join P2 (Red)</button>
@@ -323,3 +326,4 @@ document.getElementById('guess-input').onkeypress = (e) => { if(e.key==='Enter')
 </script>
 </body>
 </html>
+
