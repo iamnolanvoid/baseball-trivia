@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baseball Battle: Redemption Edition</title>
+    <title>Baseball Battle: Stadium Edition</title>
     <script src="stats.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -63,10 +63,10 @@
         <button id="join-p2" onclick="joinGame(2)" style="background: #e11d48; color: white; padding: 10px; width: 100%; border: none; border-radius: 5px;">Join P2 (Red)</button>
     </div>
 
-    <button id="start-btn" onclick="startGame()">START GAME</button>
+    <button id="start-btn" onclick="startGame()">PLAY BALL!</button>
 
     <div class="status-bar">
-        <div id="turn-indicator" class="waiting">Waiting...</div>
+        <div id="turn-indicator" class="waiting">Waiting for Players...</div>
         <div id="timer-box">60</div>
     </div>
 
@@ -92,11 +92,12 @@
     <button id="reset-btn">Full Reset Game</button>
 
 <script>
-// --- AUDIO ---
+// --- STADIUM AUDIO ---
+const sndStart = new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_f53d538622.mp3'); // Charge/Trumpet
+const sndEnd = new Audio('https://ia800305.us.archive.org/30/items/TakeMeOutToTheBallGame_170/TakeMeOutToTheBallGame.mp3'); // Instrumental
 const sndCorrect = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
 const sndWrong = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');
 const sndTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
-const sndStart = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
 sndTick.volume = 0.3;
 
 // --- FIREBASE CONFIG ---
@@ -120,6 +121,7 @@ let claimedGlobal = {};
 let gameActive = false;
 let lastP1S = 0, lastP2S = 0;
 let lastS1 = 0, lastS2 = 0;
+let wasGameOverHandled = false;
 
 const normalize = (s) => s ? s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
 
@@ -137,6 +139,8 @@ function joinGame(num) {
 }
 
 function startGame() {
+    sndEnd.pause(); 
+    sndEnd.currentTime = 0;
     sndStart.play();
     gameRef.set({ 
         gameStarted: true,
@@ -186,19 +190,15 @@ function checkEndState() {
         const p1S = d.p1Strikes || 0;
         const p2S = d.p2Strikes || 0;
 
-        // If BOTH hit 3, it's over
         if (p1S >= 3 && p2S >= 3) {
-            triggerFinalGameOver(d);
+            triggerFinalGameOver();
             return;
         }
 
-        // If ONE hits 3...
         if (p1S >= 3 || p2S >= 3) {
             if (d.redemptionUsed) {
-                // If they already got their free guess, end it.
-                triggerFinalGameOver(d);
+                triggerFinalGameOver();
             } else {
-                // Switch to the player who isn't out for one last shot
                 let survivor = p1S >= 3 ? 2 : 1;
                 gameRef.update({
                     currentTurn: survivor,
@@ -207,18 +207,16 @@ function checkEndState() {
                 });
             }
         } else {
-            // Standard turn swap
             let next = d.currentTurn === 1 ? 2 : 1;
             gameRef.update({ currentTurn: next, turnStartedAt: Date.now() });
         }
     });
 }
 
-function triggerFinalGameOver(d) {
+function triggerFinalGameOver() {
     gameRef.update({ gameOver: true, gameStarted: false });
 }
 
-// Timer
 setInterval(() => {
     if (!turnEndTime || !gameActive) return;
     const now = Date.now();
@@ -251,12 +249,10 @@ gameRef.on('value', (snapshot) => {
     claimedGlobal = data.claims || {};
     gameActive = data.gameStarted && !data.gameOver;
     
-    // UI Updates
     if (data.p1Joined) document.getElementById('card-1').classList.add('joined', 'p1-active');
     if (data.p2Joined) document.getElementById('card-2').classList.add('joined', 'p2-active');
     document.getElementById('start-btn').style.display = (data.p1Joined && data.p2Joined && !data.gameStarted) ? 'block' : 'none';
 
-    // Strike Audio/Visual
     const p1S = data.p1Strikes || 0;
     const p2S = data.p2Strikes || 0;
     if (p1S > lastP1S || p2S > lastP2S) sndWrong.play();
@@ -271,7 +267,6 @@ gameRef.on('value', (snapshot) => {
     turnEndTime = (data.turnStartedAt || 0) + 60000;
     const isMyTurn = myPlayerNum === turn && gameActive;
     
-    // Turn Indicator & Redemption State
     const indicator = document.getElementById('turn-indicator');
     if (data.redemptionUsed && !data.gameOver) {
         indicator.textContent = isMyTurn ? "★ FINAL REDEMPTION GUESS ★" : "OPPONENT'S LAST CHANCE";
@@ -284,10 +279,9 @@ gameRef.on('value', (snapshot) => {
     document.getElementById('guess-input').disabled = !isMyTurn;
     document.getElementById('submit-btn').disabled = !isMyTurn;
 
-    // Grid & Points
+    let s1 = 0, s2 = 0;
     const gridEl = document.getElementById('grid');
     gridEl.innerHTML = '';
-    let s1 = 0, s2 = 0;
     allLists[currentCategory].data.forEach(p => {
         const div = document.createElement('div');
         const claim = claimedGlobal[p.name.replace(/[.#$\[\]]/g, "_")];
@@ -308,17 +302,21 @@ gameRef.on('value', (snapshot) => {
     document.getElementById('score-1').textContent = s1;
     document.getElementById('score-2').textContent = s2;
 
-    // Game Over Alert (only once)
-    if (data.gameOver && !this.wasGameOverHandled) {
-        this.wasGameOverHandled = true;
+    if (data.gameOver && !wasGameOverHandled) {
+        wasGameOverHandled = true;
+        sndEnd.play(); 
         let winner = s1 > s2 ? "Player 1 Wins!" : (s2 > s1 ? "Player 2 Wins!" : "It's a Tie!");
         alert(`GAME OVER!\n\n${winner}\n\nP1: ${s1} pts\nP2: ${s2} pts`);
     }
-    if (!data.gameOver) this.wasGameOverHandled = false;
+    if (!data.gameOver) wasGameOverHandled = false;
 });
 
 document.getElementById('reset-btn').onclick = () => {
-    if(confirm("Full Reset?")) gameRef.set({ p1Joined: false, p2Joined: false, gameStarted: false, gameOver: false });
+    if(confirm("Full Reset?")) {
+        sndEnd.pause();
+        sndEnd.currentTime = 0;
+        gameRef.set({ p1Joined: false, p2Joined: false, gameStarted: false, gameOver: false });
+    }
 };
 document.getElementById('submit-btn').onclick = handleGuess;
 document.getElementById('guess-input').onkeypress = (e) => { if(e.key==='Enter') handleGuess(); };
