@@ -23,6 +23,8 @@
         #reset-btn { background: #475569; color: white; font-size: 0.8em; margin-top: 10px; }
         #reset-btn:hover { background: #ef4444; }
 
+        select { padding: 10px; border-radius: 8px; background: #334155; color: white; border: none; margin-bottom: 15px; width: 100%; }
+
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; width: 100%; max-width: 1100px; }
         .slot { background: #1e293b; padding: 10px; border-radius: 6px; font-size: 0.85em; display: flex; align-items: center; border: 1px solid #334155; transition: 0.3s; }
         .claimed-p1 { background: #0ea5e9; color: white; font-weight: bold; border-color: white; transform: scale(1.02); }
@@ -34,14 +36,15 @@
 
     <div class="setup-ui" id="lobby">
         <h2>Online Multiplayer Setup</h2>
+        <label>Select Category:</label>
         <select id="category-select">
-    <option value="hr">All-Time Home Runs</option>
-    <option value="singles">All-Time Singles</option>
-    <option value="dwar">All-Time Defensive WAR</option>
-</select>
+            <option value="hr">All-Time Home Runs</option>
+            <option value="singles">All-Time Singles</option>
+            <option value="dwar">All-Time Defensive WAR</option>
+        </select>
         <p>Pick a side and start guessing!</p>
-        <button onclick="joinGame(1)" style="background: #0ea5e9; color: white; margin-right: 10px;">Join as Player 1 (Blue)</button>
-        <button onclick="joinGame(2)" style="background: #e11d48; color: white;">Join as Player 2 (Red)</button>
+        <button onclick="joinGame(1)" style="background: #0ea5e9; color: white; margin-right: 10px;">Join as P1 (Blue)</button>
+        <button onclick="joinGame(2)" style="background: #e11d48; color: white;">Join as P2 (Red)</button>
     </div>
 
     <div class="game-header">
@@ -59,7 +62,7 @@
     <button id="reset-btn">Reset All Game Data</button>
 
 <script>
-// --- 1. FIREBASE CONFIG [cite: 2] ---
+// --- 1. FIREBASE CONFIG ---
 const firebaseConfig = {
   apiKey: "AIzaSyCUG4KKcbKJYnwrALVuK_bO6YW6O7nPGV8",
   authDomain: "baseballtrivia-b03ee.firebaseapp.com",
@@ -71,29 +74,41 @@ const firebaseConfig = {
   measurementId: "G-SFQD1XC8NJ"
 };
 
-// Initialize Firebase [cite: 3]
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const gameRef = db.ref('game_state');
 
-// --- 2. GAME DATA ---
-const leaders = [{"rank": 1, "name": "Barry Bonds", "stat": 762}, {"rank": 2, "name": "Henry Aaron", "stat": 755}, {"rank": 3, "name": "Babe Ruth", "stat": 714}, {"rank": 4, "name": "Albert Pujols", "stat": 703}, {"rank": 5, "name": "Alex Rodriguez", "stat": 696}, {"rank": 6, "name": "Willie Mays", "stat": 660}, {"rank": 7, "name": "Ken Griffey Jr.", "stat": 630}, {"rank": 8, "name": "Jim Thome", "stat": 612}, {"rank": 9, "name": "Sammy Sosa", "stat": 609}, {"rank": 10, "name": "Frank Robinson", "stat": 586}, {"rank": 11, "name": "Mark McGwire", "stat": 583}, {"rank": 12, "name": "Harmon Killebrew", "stat": 573}, {"rank": 13, "name": "Rafael Palmeiro", "stat": 569}, {"rank": 14, "name": "Reggie Jackson", "stat": 563}, {"rank": 15, "name": "Manny Ramirez", "stat": 555}, {"rank": 16, "name": "Mike Schmidt", "stat": 548}, {"rank": 17, "name": "David Ortiz", "stat": 541}, {"rank": 18, "name": "Mickey Mantle", "stat": 536}, {"rank": 19, "name": "Jimmie Foxx", "stat": 534}, {"rank": 20, "name": "Willie McCovey", "stat": 521}, {"rank": 20, "name": "Frank Thomas", "stat": 521}, {"rank": 20, "name": "Ted Williams", "stat": 521}, {"rank": 23, "name": "Ernie Banks", "stat": 512}, {"rank": 23, "name": "Eddie Mathews", "stat": 512}, {"rank": 25, "name": "Miguel Cabrera", "stat": 511}, {"rank": 25, "name": "Mel Ott", "stat": 511}, {"rank": 27, "name": "Gary Sheffield", "stat": 509}, {"rank": 28, "name": "Eddie Murray", "stat": 504}, {"rank": 29, "name": "Lou Gehrig", "stat": 493}, {"rank": 29, "name": "Fred McGriff", "stat": 493}, {"rank": 31, "name": "Adrian Beltré", "stat": 477}, {"rank": 32, "name": "Stan Musial", "stat": 475}, {"rank": 32, "name": "Willie Stargell", "stat": 475}, {"rank": 34, "name": "Carlos Delgado", "stat": 473}, {"rank": 35, "name": "Chipper Jones", "stat": 468}, {"rank": 36, "name": "Dave Winfield", "stat": 465}, {"rank": 37, "name": "Nelson Cruz", "stat": 464}, {"rank": 38, "name": "José Canseco", "stat": 462}, {"rank": 38, "name": "Adam Dunn", "stat": 462}, {"rank": 40, "name": "Giancarlo Stanton", "stat": 453}, {"rank": 41, "name": "Carl Yastrzemski", "stat": 452}, {"rank": 42, "name": "Jeff Bagwell", "stat": 449}, {"rank": 42, "name": "Vladimir Guerrero", "stat": 449}, {"rank": 44, "name": "Dave Kingman", "stat": 442}, {"rank": 45, "name": "Jason Giambi", "stat": 440}, {"rank": 46, "name": "Paul Konerko", "stat": 439}, {"rank": 47, "name": "Andre Dawson", "stat": 438}, {"rank": 48, "name": "Carlos Beltrán", "stat": 435}, {"rank": 49, "name": "Juan González", "stat": 434}, {"rank": 49, "name": "Andruw Jones", "stat": 434}, {"rank": 51, "name": "Cal Ripken Jr.", "stat": 431}, {"rank": 52, "name": "Mike Piazza", "stat": 427}, {"rank": 53, "name": "Billy Williams", "stat": 426}, {"rank": 54, "name": "Edwin Encarnación", "stat": 424}, {"rank": 55, "name": "Darrell Evans", "stat": 414}, {"rank": 56, "name": "Alfonso Soriano", "stat": 412}, {"rank": 57, "name": "Mark Teixeira", "stat": 409}, {"rank": 58, "name": "Duke Snider", "stat": 407}, {"rank": 59, "name": "Mike Trout", "stat": 404}, {"rank": 60, "name": "Andrés Galarraga", "stat": 399}, {"rank": 60, "name": "Al Kaline", "stat": 399}, {"rank": 62, "name": "Dale Murphy", "stat": 398}, {"rank": 63, "name": "Joe Carter", "stat": 396}, {"rank": 64, "name": "Jim Edmonds", "stat": 393}, {"rank": 65, "name": "Graig Nettles", "stat": 390}, {"rank": 66, "name": "Johnny Bench", "stat": 389}, {"rank": 67, "name": "Aramis Ramírez", "stat": 386}, {"rank": 68, "name": "Dwight Evans", "stat": 385}, {"rank": 69, "name": "Harold Baines", "stat": 384}, {"rank": 70, "name": "Larry Walker", "stat": 383}, {"rank": 71, "name": "Frank Howard", "stat": 382}, {"rank": 71, "name": "Ryan Howard", "stat": 382}, {"rank": 71, "name": "Jim Rice", "stat": 382}, {"rank": 74, "name": "Albert Belle", "stat": 381}, {"rank": 75, "name": "Orlando Cepeda", "stat": 379}, {"rank": 75, "name": "Tony Pérez", "stat": 379}, {"rank": 77, "name": "Matt Williams", "stat": 378}, {"rank": 78, "name": "Norm Cash", "stat": 377}, {"rank": 78, "name": "Jeff Kent", "stat": 377}, {"rank": 80, "name": "Carlton Fisk", "stat": 376}, {"rank": 81, "name": "Rocky Colavito", "stat": 374}, {"rank": 82, "name": "Paul Goldschmidt", "stat": 372}, {"rank": 83, "name": "Gil Hodges", "stat": 370}, {"rank": 84, "name": "Todd Helton", "stat": 369}, {"rank": 84, "name": "Ralph Kiner", "stat": 369}, {"rank": 84, "name": "Manny Machado", "stat": 369}, {"rank": 87, "name": "Aaron Judge", "stat": 368}, {"rank": 88, "name": "Freddie Freeman", "stat": 367}, {"rank": 89, "name": "Lance Berkman", "stat": 366}, {"rank": 90, "name": "Bryce Harper", "stat": 363}, {"rank": 91, "name": "Joe DiMaggio", "stat": 361}, {"rank": 92, "name": "Gary Gaetti", "stat": 360}, {"rank": 93, "name": "Johnny Mize", "stat": 359}, {"rank": 94, "name": "Yogi Berra", "stat": 358}, {"rank": 94, "name": "Carlos Lee", "stat": 358}, {"rank": 96, "name": "Joey Votto", "stat": 356}, {"rank": 97, "name": "Greg Vaughn", "stat": 355}, {"rank": 98, "name": "Luis Gonzalez", "stat": 354}, {"rank": 99, "name": "Lee May", "stat": 354}, {"rank": 100, "name": "Nolan Arenado", "stat": 353}];
-
-// --- 3. MULTIPLAYER LOGIC ---
+// --- 2. MULTIPLAYER STATE ---
 let myPlayerNum = null;
+let currentCategory = 'hr'; 
 let claimedNames = {};
+
+const normalize = (s) => s ? s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
+
+// --- 3. FUNCTIONS ---
 
 function joinGame(num) {
     myPlayerNum = num;
+    const selectedCat = document.getElementById('category-select').value;
+    
+    // Set initial category and clear claims in Firebase
+    gameRef.update({ 
+        category: selectedCat,
+        claims: {} 
+    });
+    
     document.getElementById('lobby').style.display = 'none';
     document.getElementById(`card-${num}`).classList.add(num === 1 ? 'p1-active' : 'p2-active');
 }
 
-const normalize = (s) => s ? s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
-
 function createGrid() {
     const gridEl = document.getElementById('grid');
     gridEl.innerHTML = '';
+    
+    // Safety check for stats.js data
+    if (!allLists[currentCategory]) return;
+    
+    const leaders = allLists[currentCategory].data;
     leaders.forEach((p, i) => {
         const div = document.createElement('div');
         div.className = 'slot';
@@ -107,6 +122,9 @@ function handleGuess() {
     if (!myPlayerNum) return alert("Please join as Player 1 or Player 2 first!");
     const input = document.getElementById('guess-input');
     const val = normalize(input.value);
+    if (!val) return;
+
+    const leaders = allLists[currentCategory].data;
     
     const index = leaders.findIndex(p => {
         if (claimedNames[p.name]) return false;
@@ -117,7 +135,7 @@ function handleGuess() {
 
     if (index !== -1) {
         const p = leaders[index];
-        gameRef.child('claims').child(p.name).set({
+        gameRef.child('claims').child(p.name.replace(/[.#$\[\]]/g, "_")).set({
             player: myPlayerNum,
             rank: p.rank,
             realName: p.name
@@ -126,30 +144,33 @@ function handleGuess() {
     }
 }
 
-// Global Reset
-document.getElementById('reset-btn').addEventListener('click', () => {
-    if(confirm("Are you sure? This will clear the board for everyone!")) {
-        gameRef.set({ claims: {} });
-    }
-});
-
 // Sync from Firebase
-gameRef.child('claims').on('value', (snapshot) => {
+gameRef.on('value', (snapshot) => {
     const data = snapshot.val() || {};
-    claimedNames = data;
     
-    // Clear the board visual first
+    // Update category if changed by either player
+    if (data.category && data.category !== currentCategory) {
+        currentCategory = data.category;
+        document.getElementById('category-select').value = currentCategory;
+    }
+    
+    claimedNames = data.claims || {};
+    
+    // Redraw grid for current category
     createGrid();
     
     let scores = {1: 0, 2: 0};
+    const leaders = allLists[currentCategory].data;
     
-    Object.values(data).forEach(claim => {
-        scores[claim.player] += claim.rank;
+    Object.values(claimedNames).forEach(claim => {
+        scores[claim.player]++; 
         const idx = leaders.findIndex(l => l.name === claim.realName);
-        const slot = document.getElementById(`rank-${idx}`);
-        if (slot) {
-            slot.className = `slot claimed-p${claim.player}`;
-            slot.innerHTML = `<span class="rank">${claim.rank}</span> ${claim.realName}`;
+        if (idx !== -1) {
+            const slot = document.getElementById(`rank-${idx}`);
+            if (slot) {
+                slot.className = `slot claimed-p${claim.player}`;
+                slot.innerHTML = `<span class="rank">${claim.rank}</span> ${claim.realName}`;
+            }
         }
     });
     
@@ -157,11 +178,19 @@ gameRef.child('claims').on('value', (snapshot) => {
     document.getElementById('score-2').textContent = scores[2];
 });
 
+// Global Reset
+document.getElementById('reset-btn').addEventListener('click', () => {
+    if(confirm("Are you sure? This will clear the board for everyone!")) {
+        gameRef.set({ category: currentCategory, claims: {} });
+    }
+});
+
 document.getElementById('submit-btn').addEventListener('click', handleGuess);
 document.getElementById('guess-input').addEventListener('keypress', (e) => { if(e.key==='Enter') handleGuess(); });
 
-createGrid();
+// Start grid on load
+window.onload = createGrid;
+
 </script>
 </body>
 </html>
-
