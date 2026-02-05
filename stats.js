@@ -1,20 +1,11 @@
 const allLists = {
     hr: {
         title: "Home Runs",
-        data: [
-            { "rank": "762", "name": "Barry Bonds" }, { "rank": "755", "name": "Hank Aaron" },
-            { "rank": "714", "name": "Babe Ruth" }, { "rank": "696", "name": "Alex Rodriguez" },
-            { "rank": "703", "name": "Albert Pujols" }, { "rank": "660", "name": "Willie Mays" },
-            { "rank": "630", "name": "Ken Griffey Jr." }, { "rank": "612", "name": "Jim Thome" },
-            { "rank": "609", "name": "Sammy Sosa" }, { "rank": "586", "name": "Frank Robinson" }
-        ]
+        data: [ ... ]
     },
     hits: {
         title: "Career Hits",
-        data: [
-            {"rank": "1", "name": "Pete Rose"}, {"rank": "2", "name": "Ty Cobb"}, {"rank": "3", "name": "Henry Aaron"}, {"rank": "4", "name": "Stan Musial"}, {"rank": "5", "name": "Tris Speaker"}, {"rank": "6", "name": "Derek Jeter"}, {"rank": "7", "name": "Cap Anson"}, {"rank": "8", "name": "Honus Wagner"}, {"rank": "9", "name": "Carl Yastrzemski"}, {"rank": "10", "name": "Albert Pujols"}, {"rank": "11", "name": "Paul Molitor"}, {"rank": "12", "name": "Eddie Collins"}, {"rank": "13", "name": "Willie Mays"}, {"rank": "14", "name": "Eddie Murray"}, {"rank": "15", "name": "Nap Lajoie"}, {"rank": "16", "name": "Cal Ripken Jr."}, {"rank": "17", "name": "Miguel Cabrera"}, {"rank": "18", "name": "Adrian Beltré"}, {"rank": "19", "name": "George Brett"}, {"rank": "20", "name": "Paul Waner"}, {"rank": "21", "name": "Robin Yount"}, {"rank": "22", "name": "Tony Gwynn"}, {"rank": "23", "name": "Alex Rodriguez"}, {"rank": "24", "name": "Dave Winfield"}, {"rank": "25", "name": "Ichiro Suzuki"}, {"rank": "26", "name": "Craig Biggio"}, {"rank": "27", "name": "Rickey Henderson"}, {"rank": "28", "name": "Rod Carew"}, {"rank": "29", "name": "Lou Brock"}, {"rank": "30", "name": "Rafael Palmeiro"}, {"rank": "31", "name": "Wade Boggs"}, {"rank": "32", "name": "Al Kaline"}, {"rank": "33", "name": "Roberto Clemente"}, {"rank": "34", "name": "Sam Rice"}, {"rank": "35", "name": "Sam Crawford"}, {"rank": "36", "name": "Frank Robinson"}, {"rank": "37", "name": "Jake Beckley"}, {"rank": "38", "name": "Barry Bonds"}, {"rank": "39", "name": "Willie Keeler"}, {"rank": "40", "name": "Rogers Hornsby"}, {"rank": "41", "name": "Al Simmons"}, {"rank": "42", "name": "Zack Wheat"}, {"rank": "43", "name": "Frankie Frisch"}, {"rank": "44", "name": "Omar Vizquel"}, {"rank": "45", "name": "Mel Ott"}, {"rank": "46", "name": "Babe Ruth"}, {"rank": "47", "name": "Harold Baines"}, {"rank": "48", "name": "Jesse Burkett"}, {"rank": "49", "name": "Brooks Robinson"}, {"rank": "50", "name": "Iván Rodríguez"}, {"rank": "51", "name": "Charlie Gehringer"}, {"rank": "52", "name": "George Sisler"}, {"rank": "53", "name": "Ken Griffey Jr."}, {"rank": "54", "name": "Andre Dawson"}, {"rank": "55", "name": "Johnny Damon"}, {"rank": "56", "name": "Vada Pinson"}, {"rank": "57", "name": "Luke Appling"}, {"rank": "58", "name": "Al Oliver"}, {"rank": "59", "name": "Goose Goslin"}, {"rank": "60", "name": "Tony Pérez"}, {"rank": "61", "name": "Chipper Jones"}, {"rank": "62", "name": "Carlos Beltrán"}, {"rank": "63", "name": "Roberto Alomar"}, {"rank": "64", "name": "Lou Gehrig"}, {"rank": "65", "name": "Rusty Staub"}, {"rank": "66", "name": "Bill Buckner"}, {"rank": "67", "name": "Dave Parker"}, {"rank": "68", "name": "Billy Williams"}, {"rank": "69", "name": "Doc Cramer"}, {"rank": "70", "name": "Gary Sheffield"}, {"rank": "71", "name": "Fred Clarke"}, {"rank": "72", "name": "Luis Aparicio"}, {"rank": "73", "name": "Max Carey"}, {"rank": "74", "name": "George Sisler"}, {"rank": "75", "name": "Nellie Fox"}, {"rank": "76", "name": "Harry Heilmann"}, {"rank": "77", "name": "Ted Williams"}, {"rank": "78", "name": "Lave Cross"}, {"rank": "79", "name": "Jimmie Foxx"}, {"rank": "80", "name": "Robinson Canó"}, {"rank": "81", "name": "Rabbit Maranville"}, {"rank": "82", "name": "Steve Garvey"}, {"rank": "83", "name": "Ed Delahanty"}, {"rank": "84", "name": "Luis Gonzalez"}, {"rank": "85", "name": "Vladimir Guerrero"}, {"rank": "86", "name": "Julio Franco"}, {"rank": "87", "name": "Reggie Jackson"}, {"rank": "88", "name": "Ernie Banks"}, {"rank": "89", "name": "Richie Ashburn"}, {"rank": "90", "name": "Willie Davis"}, {"rank": "91", "name": "Steve Finley"}, {"rank": "92", "name": "George Van Haltren"}, {"rank": "93", "name": "Garret Anderson"}, {"rank": "94", "name": "Heinie Manush"}, {"rank": "95", "name": "Todd Helton"}, {"rank": "96", "name": "Joe Morgan"}, {"rank": "97", "name": "Buddy Bell"}, {"rank": "98", "name": "Joe DiMaggio"}, {"rank": "99", "name": "Silver Flint"}, {"rank": "100", "name": "Garret Anderson"}
-        ]
-    },
-    singles: { title: "Singles", data: [] },
-    dwar: { title: "Defensive WAR", data: [] }
+        data: [ ... ]
+    }
+    // ... etc
 };
