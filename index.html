@@ -55,12 +55,13 @@
     <div class="setup-ui" id="lobby">
         <h2>Game Setup</h2>
         <select id="category-select" style="margin-bottom: 15px; width: 100%; padding: 8px;">
-<div class="controls">
-    <label>Choose a category:</label>
+<div class="picker-container">
+    <label for="category-select">Select Category:</label>
     <select id="category-select">
         <option value="hr">Home Runs</option>
         <option value="hits">Hits</option>
         <option value="dwar">Defensive WAR</option>
+        <option value="wins">Wins</option>
     </select>
 </div>
 </select>
@@ -329,6 +330,7 @@ document.getElementById('guess-input').onkeypress = (e) => { if(e.key==='Enter')
 </script>
 </body>
 </html>
+
 
 
 
