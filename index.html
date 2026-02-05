@@ -3,81 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baseball Battle: Pro Mode</title>
+    <title>Baseball Battle: Stadium Edition</title>
     <script src="stats.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .setup-ui { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; border: 1px solid #334155; }
+        .setup-ui { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; border: 1px solid #334155; width: 300px; }
         
-        /* Turn & Timer Header */
-        .status-bar { display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin-bottom: 15px; }
-        #timer-box { font-size: 2em; font-weight: bold; color: #fbbf24; background: #1e293b; padding: 10px 20px; border-radius: 10px; border: 2px solid #334155; min-width: 80px; text-align: center; }
+        .status-bar { display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin-bottom: 15px; align-items: center; }
+        #timer-box { font-size: 2.5em; font-weight: bold; color: #fbbf24; background: #1e293b; padding: 10px 20px; border-radius: 10px; border: 2px solid #334155; min-width: 90px; text-align: center; transition: 0.3s; }
+        .low-time { color: #ef4444 !important; border-color: #ef4444 !important; animation: shake 0.5s infinite; }
         
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, 1px); } }
+
         .game-header { display: flex; gap: 20px; margin-bottom: 20px; }
-        .player-card { padding: 15px; border-radius: 10px; border: 2px solid #334155; text-align: center; min-width: 180px; }
+        .player-card { padding: 15px; border-radius: 10px; border: 2px solid #334155; text-align: center; min-width: 180px; opacity: 0.5; transition: 0.3s; }
+        .joined { opacity: 1; }
         .p1-active { border-color: #38bdf8; background: #0c4a6e; }
         .p2-active { border-color: #fb7185; background: #881337; }
+        .out-of-game { opacity: 0.3 !important; background: #000 !important; border-color: #444 !important; }
         
-        .strike { color: #ef4444; font-size: 1.2em; letter-spacing: 5px; font-weight: bold; }
-        
-        #turn-indicator { font-size: 1.2em; font-weight: bold; padding: 10px 20px; border-radius: 8px; margin-bottom: 10px; width: 100%; max-width: 600px; text-align: center; }
+        .strike { color: #ef4444; font-size: 1.5em; letter-spacing: 5px; font-weight: bold; height: 30px; margin-top: 5px; }
+        .points-label { font-size: 0.8em; text-transform: uppercase; opacity: 0.7; }
+
+        #turn-indicator { font-size: 1.2em; font-weight: bold; padding: 12px; border-radius: 8px; width: 100%; max-width: 400px; text-align: center; }
         .your-turn { background: #22c55e; color: white; }
         .waiting { background: #475569; color: #cbd5e1; }
+        .redemption { background: #f59e0b; color: white; animation: pulse 1s infinite; }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
         .input-area { margin-bottom: 20px; display: flex; gap: 10px; }
-        input { padding: 12px; font-size: 1.1em; border-radius: 8px; border: none; width: 250px; }
+        input { padding: 12px; font-size: 1.1em; border-radius: 8px; border: none; width: 250px; outline: none; }
         input:disabled { background: #334155; opacity: 0.5; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; width: 100%; max-width: 1100px; }
-        .slot { background: #1e293b; padding: 10px; border-radius: 6px; font-size: 0.85em; border: 1px solid #334155; }
-        .claimed-p1 { background: #0ea5e9; border-color: white; font-weight: bold; }
-        .claimed-p2 { background: #e11d48; border-color: white; font-weight: bold; }
-        #reset-btn { background: #ef4444; color: white; margin-top: 30px; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+        .slot { background: #1e293b; padding: 10px; border-radius: 6px; font-size: 0.85em; border: 1px solid #334155; transition: 0.3s; }
+        .claimed-p1 { background: #0ea5e9; border-color: white; font-weight: bold; animation: pop 0.3s; }
+        .claimed-p2 { background: #e11d48; border-color: white; font-weight: bold; animation: pop 0.3s; }
+        
+        @keyframes pop { 0% { transform: scale(0.8); } 100% { transform: scale(1); } }
+        
+        #start-btn { background: #22c55e; color: white; padding: 15px 30px; font-size: 1.2em; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: none; margin-bottom: 20px; }
+        #reset-btn { background: #ef4444; color: white; margin-top: 30px; border: none; padding: 10px; border-radius: 5px; cursor: pointer; opacity: 0.5; }
     </style>
 </head>
 <body>
 
     <div class="setup-ui" id="lobby">
         <h2>Game Setup</h2>
-        <select id="category-select" style="margin-bottom: 15px; padding: 5px;">
+        <select id="category-select" style="margin-bottom: 15px; width: 100%; padding: 8px;">
             <option value="hr">Home Runs</option>
             <option value="singles">Singles</option>
             <option value="dwar">Defensive WAR</option>
-        </select><br>
-        <button onclick="joinGame(1)" style="background: #0ea5e9; color: white; padding: 10px;">Join P1 (Blue)</button>
-        <button onclick="joinGame(2)" style="background: #e11d48; color: white; padding: 10px;">Join P2 (Red)</button>
+        </select>
+        <button id="join-p1" onclick="joinGame(1)" style="background: #0ea5e9; color: white; padding: 10px; width: 100%; margin-bottom: 5px; border: none; border-radius: 5px;">Join P1 (Blue)</button>
+        <button id="join-p2" onclick="joinGame(2)" style="background: #e11d48; color: white; padding: 10px; width: 100%; border: none; border-radius: 5px;">Join P2 (Red)</button>
     </div>
 
+    <button id="start-btn" onclick="startGame()">PLAY BALL!</button>
+
     <div class="status-bar">
-        <div id="turn-indicator" class="waiting">Select a Side</div>
+        <div id="turn-indicator" class="waiting">Waiting for Players...</div>
         <div id="timer-box">60</div>
     </div>
 
     <div class="game-header">
         <div id="card-1" class="player-card">
-            <div>Player 1</div>
-            <div style="font-size: 1.5em; font-weight: bold;" id="score-1">0</div>
+            <div class="points-label">P1 Points</div>
+            <div style="font-size: 2.2em; font-weight: bold;" id="score-1">0</div>
             <div class="strike" id="p1-strikes"></div>
         </div>
         <div id="card-2" class="player-card">
-            <div>Player 2</div>
-            <div style="font-size: 1.5em; font-weight: bold;" id="score-2">0</div>
+            <div class="points-label">P2 Points</div>
+            <div style="font-size: 2.2em; font-weight: bold;" id="score-2">0</div>
             <div class="strike" id="p2-strikes"></div>
         </div>
     </div>
 
     <div class="input-area">
         <input type="text" id="guess-input" placeholder="Type name..." disabled>
-        <button id="submit-btn" style="background:#38bdf8; border-radius:8px; border:none; padding:10px 20px; font-weight:bold;" disabled>GUESS</button>
+        <button id="submit-btn" style="background:#38bdf8; border:none; padding:10px 25px; font-weight:bold; border-radius:8px;" disabled>GUESS</button>
     </div>
 
     <div class="grid" id="grid"></div>
     <button id="reset-btn">Full Reset Game</button>
 
 <script>
+// --- STADIUM AUDIO ---
+const sndStart = new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_f53d538622.mp3'); // Charge/Trumpet
+const sndEnd = new Audio('https://ia800305.us.archive.org/30/items/TakeMeOutToTheBallGame_170/TakeMeOutToTheBallGame.mp3'); // Instrumental
+const sndCorrect = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+const sndWrong = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');
+const sndTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+sndTick.volume = 0.3;
+
 // --- FIREBASE CONFIG ---
 const firebaseConfig = {
   apiKey: "AIzaSyCUG4KKcbKJYnwrALVuK_bO6YW6O7nPGV8",
@@ -95,34 +117,54 @@ const gameRef = db.ref('game_state');
 let myPlayerNum = null;
 let currentCategory = 'hr';
 let turnEndTime = 0;
+let claimedGlobal = {};
+let gameActive = false;
+let lastP1S = 0, lastP2S = 0;
+let lastS1 = 0, lastS2 = 0;
+let wasGameOverHandled = false;
 
 const normalize = (s) => s ? s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
 
 function joinGame(num) {
     myPlayerNum = num;
     const cat = document.getElementById('category-select').value;
-    // Set start time for turn 1 (60 seconds from now)
     gameRef.update({ 
         category: cat,
-        claims: {},
-        currentTurn: 1,
-        p1Strikes: 0,
-        p2Strikes: 0,
-        turnStartedAt: Date.now()
+        [`p${num}Joined`]: true,
+        gameStarted: false,
+        gameOver: false,
+        redemptionUsed: false
     });
     document.getElementById('lobby').style.display = 'none';
-    document.getElementById(`card-${num}`).classList.add(num === 1 ? 'p1-active' : 'p2-active');
+}
+
+function startGame() {
+    sndEnd.pause(); 
+    sndEnd.currentTime = 0;
+    sndStart.play();
+    gameRef.set({ 
+        gameStarted: true,
+        gameOver: false,
+        category: document.getElementById('category-select').value,
+        currentTurn: 1,
+        turnStartedAt: Date.now(),
+        p1Strikes: 0,
+        p2Strikes: 0,
+        claims: {},
+        p1Joined: true,
+        p2Joined: true,
+        redemptionUsed: false
+    });
 }
 
 function handleGuess() {
     const input = document.getElementById('guess-input');
     const val = normalize(input.value);
-    if (!val) return;
+    if (!val || !gameActive) return;
 
     const leaders = allLists[currentCategory].data;
     const index = leaders.findIndex(p => {
         const safeName = p.name.replace(/[.#$\[\]]/g, "_");
-        // Check if already claimed
         if (claimedGlobal[safeName]) return false;
         const fullName = normalize(p.name);
         return val === fullName || val === fullName.split(' ').pop();
@@ -131,93 +173,150 @@ function handleGuess() {
     if (index !== -1) {
         const p = leaders[index];
         gameRef.child('claims').child(p.name.replace(/[.#$\[\]]/g, "_")).set({
-            player: myPlayerNum, rank: p.rank, realName: p.name
+            player: myPlayerNum, rank: parseInt(p.rank), realName: p.name
         });
-        nextTurn();
+        checkEndState();
     } else {
-        // WRONG GUESS - Record Strike
-        gameRef.child(`p${myPlayerNum}Strikes`).transaction(curr => (curr || 0) + 1);
-        nextTurn();
+        gameRef.child(`p${myPlayerNum}Strikes`).transaction(curr => (curr || 0) + 1, () => {
+            checkEndState();
+        });
     }
     input.value = '';
 }
 
-function nextTurn() {
-    gameRef.update({ 
-        currentTurn: myPlayerNum === 1 ? 2 : 1,
-        turnStartedAt: Date.now()
+function checkEndState() {
+    gameRef.once('value', snap => {
+        const d = snap.val();
+        const p1S = d.p1Strikes || 0;
+        const p2S = d.p2Strikes || 0;
+
+        if (p1S >= 3 && p2S >= 3) {
+            triggerFinalGameOver();
+            return;
+        }
+
+        if (p1S >= 3 || p2S >= 3) {
+            if (d.redemptionUsed) {
+                triggerFinalGameOver();
+            } else {
+                let survivor = p1S >= 3 ? 2 : 1;
+                gameRef.update({
+                    currentTurn: survivor,
+                    turnStartedAt: Date.now(),
+                    redemptionUsed: true
+                });
+            }
+        } else {
+            let next = d.currentTurn === 1 ? 2 : 1;
+            gameRef.update({ currentTurn: next, turnStartedAt: Date.now() });
+        }
     });
 }
 
-// Timer Loop
+function triggerFinalGameOver() {
+    gameRef.update({ gameOver: true, gameStarted: false });
+}
+
 setInterval(() => {
-    if (!turnEndTime) return;
+    if (!turnEndTime || !gameActive) return;
     const now = Date.now();
     const remaining = Math.max(0, Math.ceil((turnEndTime - now) / 1000));
-    document.getElementById('timer-box').textContent = remaining;
+    const timerBox = document.getElementById('timer-box');
+    timerBox.textContent = remaining;
 
-    // Auto-strike if time hits zero (Only Player 1's computer handles the "switch" to prevent double-strikes)
-    if (remaining === 0 && myPlayerNum === 1) {
-        // We trigger a "Next Turn" and add a strike to whoever's turn it was
+    if (remaining <= 10 && remaining > 0) {
+        timerBox.classList.add('low-time');
+        sndTick.play();
+    } else {
+        timerBox.classList.remove('low-time');
+    }
+
+    if (remaining === 0 && myPlayerNum !== null) {
         gameRef.once('value', snap => {
             const d = snap.val();
-            gameRef.child(`p${d.currentTurn}Strikes`).transaction(c => (c || 0) + 1);
-            gameRef.update({ currentTurn: d.currentTurn === 1 ? 2 : 1, turnStartedAt: Date.now() });
+            if (d.gameStarted && !d.gameOver && d.currentTurn === myPlayerNum) {
+                gameRef.child(`p${myPlayerNum}Strikes`).transaction(c => (c || 0) + 1, () => {
+                    checkEndState();
+                });
+            }
         });
     }
-}, 500);
-
-let claimedGlobal = {};
+}, 1000);
 
 gameRef.on('value', (snapshot) => {
     const data = snapshot.val() || {};
     currentCategory = data.category || 'hr';
     claimedGlobal = data.claims || {};
+    gameActive = data.gameStarted && !data.gameOver;
+    
+    if (data.p1Joined) document.getElementById('card-1').classList.add('joined', 'p1-active');
+    if (data.p2Joined) document.getElementById('card-2').classList.add('joined', 'p2-active');
+    document.getElementById('start-btn').style.display = (data.p1Joined && data.p2Joined && !data.gameStarted) ? 'block' : 'none';
+
+    const p1S = data.p1Strikes || 0;
+    const p2S = data.p2Strikes || 0;
+    if (p1S > lastP1S || p2S > lastP2S) sndWrong.play();
+    lastP1S = p1S; lastP2S = p2S;
+
+    document.getElementById('p1-strikes').textContent = "X".repeat(Math.min(p1S, 3));
+    document.getElementById('p2-strikes').textContent = "X".repeat(Math.min(p2S, 3));
+    document.getElementById('card-1').classList.toggle('out-of-game', p1S >= 3);
+    document.getElementById('card-2').classList.toggle('out-of-game', p2S >= 3);
+
     const turn = data.currentTurn || 1;
     turnEndTime = (data.turnStartedAt || 0) + 60000;
-
-    // Update UI
-    document.getElementById('p1-strikes').textContent = "X".repeat(data.p1Strikes || 0);
-    document.getElementById('p2-strikes').textContent = "X".repeat(data.p2Strikes || 0);
+    const isMyTurn = myPlayerNum === turn && gameActive;
     
-    const isMyTurn = myPlayerNum === turn;
     const indicator = document.getElementById('turn-indicator');
-    indicator.textContent = isMyTurn ? "★ YOUR TURN ★" : "OPPONENT'S TURN";
-    indicator.className = isMyTurn ? "your-turn" : "waiting";
-    
+    if (data.redemptionUsed && !data.gameOver) {
+        indicator.textContent = isMyTurn ? "★ FINAL REDEMPTION GUESS ★" : "OPPONENT'S LAST CHANCE";
+        indicator.className = isMyTurn ? "redemption" : "waiting";
+    } else {
+        indicator.textContent = isMyTurn ? "★ YOUR TURN ★" : (gameActive ? "OPPONENT'S TURN" : "Ready?");
+        indicator.className = isMyTurn ? "your-turn" : "waiting";
+    }
+
     document.getElementById('guess-input').disabled = !isMyTurn;
     document.getElementById('submit-btn').disabled = !isMyTurn;
 
-    // Render Grid & Score
+    let s1 = 0, s2 = 0;
     const gridEl = document.getElementById('grid');
     gridEl.innerHTML = '';
-    let s1 = 0, s2 = 0;
-    
     allLists[currentCategory].data.forEach(p => {
         const div = document.createElement('div');
         const claim = claimedGlobal[p.name.replace(/[.#$\[\]]/g, "_")];
         if (claim) {
             div.className = `slot claimed-p${claim.player}`;
             div.innerHTML = `<span>${p.rank}</span> ${p.name}`;
-            claim.player === 1 ? s1++ : s2++;
+            if (claim.player === 1) s1 += parseInt(p.rank);
+            else s2 += parseInt(p.rank);
         } else {
             div.className = 'slot';
             div.innerHTML = `<span>${p.rank}</span> ???`;
         }
         gridEl.appendChild(div);
     });
+
+    if (s1 > lastS1 || s2 > lastS2) sndCorrect.play();
+    lastS1 = s1; lastS2 = s2;
     document.getElementById('score-1').textContent = s1;
     document.getElementById('score-2').textContent = s2;
 
-    // Check Game Over (3 strikes for both)
-    if (data.p1Strikes >= 3 && data.p2Strikes >= 3) {
-        alert(`GAME OVER! P1: ${s1} | P2: ${s2}`);
-        gameRef.set({ category: 'hr', currentTurn: 1, p1Strikes: 0, p2Strikes: 0, claims: {} });
+    if (data.gameOver && !wasGameOverHandled) {
+        wasGameOverHandled = true;
+        sndEnd.play(); 
+        let winner = s1 > s2 ? "Player 1 Wins!" : (s2 > s1 ? "Player 2 Wins!" : "It's a Tie!");
+        alert(`GAME OVER!\n\n${winner}\n\nP1: ${s1} pts\nP2: ${s2} pts`);
     }
+    if (!data.gameOver) wasGameOverHandled = false;
 });
 
 document.getElementById('reset-btn').onclick = () => {
-    if(confirm("Reset Game?")) gameRef.set({ category: currentCategory, claims: {}, currentTurn: 1, p1Strikes: 0, p2Strikes: 0 });
+    if(confirm("Full Reset?")) {
+        sndEnd.pause();
+        sndEnd.currentTime = 0;
+        gameRef.set({ p1Joined: false, p2Joined: false, gameStarted: false, gameOver: false });
+    }
 };
 document.getElementById('submit-btn').onclick = handleGuess;
 document.getElementById('guess-input').onkeypress = (e) => { if(e.key==='Enter') handleGuess(); };
